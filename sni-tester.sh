@@ -59,7 +59,7 @@ then
 fi
 read -n 1 -s
 if [ ! -f "$workdir/example.com.crt" ]; then
-    openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout example.com.key -out example.com.crt
+    openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout $workdir/example.com.key -out $workdir/example.com.crt
 fi
 read -n 1 -s
 while [ "$repeat" -gt 0 ]
