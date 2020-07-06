@@ -33,6 +33,7 @@ setup_istio()
 # arguments
 while [ "$1" != "" ]; do
     case $1 in
+    -t -r 10
         -k | --kubeconfig )     shift
                                 kubeconfig=$1
                                 ;;
@@ -42,17 +43,14 @@ while [ "$1" != "" ]; do
         -r | --repeat )         shift
                                 repeat=$1
                                 ;;
-        -s | --setup )          shift
-                                setupistio=1
+        -s | --setup )          setupistio=1
                                 ;;
         -w | --workdir )        shift
                                 workdir=$1
                                 ;;
-        -t | --test_only )      shift
-                                test_only=1
+        -t | --test_only )      test_only=1
                                 ;;
-        -d | --delete )         shift
-                                delete=1
+        -d | --delete )         delete=1
                                 ;;
         -h | --help )           usage
                                 exit
