@@ -88,7 +88,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: gateway-$counter
-  namespace: customer
+  namespace: istio-system
 spec:
   selector:
     istio: ingressgateway
@@ -108,7 +108,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: vs-$counter
-  namespace: customer
+  namespace: istio-system
 spec:
   hosts:
   - $counter.example.com
@@ -128,5 +128,3 @@ EOF
 done
 
 rm -rf $workdir
-kubectl delete ns customer
-kubectl create ns customer
