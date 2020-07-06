@@ -99,7 +99,7 @@ spec:
       protocol: HTTPS
     tls:
       mode: SIMPLE
-      credentialName: $counter-credential
+      credentialName: credential-$counter
     hosts:
     - $counter.example.com
 ---
