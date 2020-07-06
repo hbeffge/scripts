@@ -87,7 +87,7 @@ do
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: mygateway
+  name: gateway-$counter
   namespace: customer
 spec:
   selector:
@@ -95,15 +95,33 @@ spec:
   servers:
   - port:
       number: 443
-      name: https
+      name: https-$counter
       protocol: HTTPS
     tls:
       mode: SIMPLE
       credentialName: $counter-credential
     hosts:
     - $counter.example.com
+---
+# create virtual service
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vs-$counter
+  namespace: customer
+spec:
+  hosts:
+  - $counter.example.com
+  gateways:
+  - customer/gateway-$counter
+  http:
+  - route:
+    - destination:
+        port:
+          number: 443
+        host: httpbin.org
+---
 EOF
-    # create virtual service
     # create service entry
     (( counter = counter + 1 ))
     (( repeat = repeat - 1 ))
