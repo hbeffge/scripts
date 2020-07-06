@@ -6,7 +6,7 @@ repeat=1
 counter=1
 setupistio=0
 workdir=/tmp/sni-tester
-test=0
+test_only=0
 delete=0
 
 # help text
@@ -18,7 +18,7 @@ usage()
     echo -e "\tUse -r or --repeat to sepcify how many sni configs should be generated. Default is 1"
     echo -e "\tUse -s or --setup to install Istio. Default is disabled"
     echo -e "\tUse -w or --workdir to sepcify the working directory e.g. to store the certificates. Default is /tmp/sni-tester"
-    echo -e "\tUse -t or --test to only run test curls against all ingress gateways. Default is disbaled"
+    echo -e "\tUse -t or --test_only to only run test_only curls against all ingress gateways. Default is disbaled"
     echo -e "\tUse -d or --delete to delete all istio config & tmp dirs. Default is disbaled"
 }
 
@@ -48,8 +48,8 @@ while [ "$1" != "" ]; do
         -w | --workdir )        shift
                                 workdir=$1
                                 ;;
-        -t | --test )           shift
-                                test=1
+        -t | --test_only )      shift
+                                test_only=1
                                 ;;
         -d | --delete )         shift
                                 delete=1
@@ -70,12 +70,12 @@ echo -e "\t-c = $counter"
 echo -e "\t-r = $repeat"
 echo -e "\t-s = $setupistio"
 echo -e "\t-w = $workdir"
-echo -e "\t-t = $test"
+echo -e "\t-t = $test_only"
 echo -e "\t-d = $delete"
 echo -e "==="
 
 
-if [ "$test" -eq 1 ]; then
+if [ "$test_only" -eq 1 ]; then
     export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
     export INGRESS_HOST=$(ifconfig ens3 | grep 'inet' | cut -d ' ' -f 10 | awk 'NR==1{print $1}')
 
