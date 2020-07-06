@@ -126,5 +126,3 @@ EOF
     (( counter = counter + 1 ))
     (( repeat = repeat - 1 ))
 done
-
-rm -rf $workdir
