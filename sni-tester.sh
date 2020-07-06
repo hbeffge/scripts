@@ -80,7 +80,7 @@ do
     # create certificate
     openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
     openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$counter.example.com.csr -out $workdir/$counter.example.com.crt
-    kubectl create -n istio-system secret tls $counter-credential --key=$workdir/$counter.example.com.key --cert=$workdir/$counter.example.com.crt
+    kubectl create -n istio-system secret tls credential-$counter --key=$workdir/$counter.example.com.key --cert=$workdir/$counter.example.com.crt
     
     # create gateway
     cat << EOF | kubectl apply -f -
