@@ -57,11 +57,11 @@ if [ ! -d "$workdir" ]
 then
     mkdir $workdir
 fi
-
+pause
 if [ ! -f "$workdir/example.com.crt" ]; then
     openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout example.com.key -out example.com.crt
 fi
-
+pause
 while [ "$repeat" -gt 0 ]
 do
     openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
