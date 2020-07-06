@@ -83,26 +83,26 @@ do
     kubectl create -n customer secret tls $counter-credential --key=$workdir/$counter.example.com.key --cert=$workdir/$counter.example.com.crt
     
     # create gateway
-    cat <<EOF | kubectl apply -f -
-    apiVersion: networking.istio.io/v1beta1
-    kind: Gateway
-    metadata:
-      name: mygateway
-      namespace: customer
-    spec:
-      selector:
-        istio: ingressgateway
-      servers:
-      - port:
-          number: 443
-          name: https
-          protocol: HTTPS
-        tls:
-          mode: SIMPLE
-          credentialName: $counter-credential
-        hosts:
-        - $counter.example.com
-    EOF
+    cat << EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: mygateway
+  namespace: customer
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: $counter-credential
+    hosts:
+    - $counter.example.com
+EOF
     # create virtual service
     # create service entry
     (( counter = counter + 1 ))
