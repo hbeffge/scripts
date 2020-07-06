@@ -113,7 +113,7 @@ spec:
   hosts:
   - $counter.example.com
   gateways:
-  - customer/gateway-$counter
+  - gateway-$counter
   http:
   - route:
     - destination:
