@@ -63,7 +63,7 @@ echo -e "==="
 if [ "$setupistio" == 1 ]
 then
     echo -e "\tSetting up Istio"
-    setup_istio()
+    setup_istio
 fi
 
 if [ ! -d "$workdir" ] 
