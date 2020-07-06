@@ -136,6 +136,16 @@ spec:
     protocol: HTTPS
   resolution: DNS
 ---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-httpbin
+  namespace: istio-system
+spec:
+  host: "httpbin.org"
+  trafficPolicy:
+    tls:
+      mode: SIMPLE
 EOF
     (( counter = counter + 1 ))
     (( repeat = repeat - 1 ))
