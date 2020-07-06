@@ -58,7 +58,7 @@ then
     mkdir $workdir
 fi
 
-if [ ! -f "$workdir/example.com.crt" ]; then
+if [ ! -f "$kubectl delete ns customer/example.com.crt" ]; then
     openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout $workdir/example.com.key -out $workdir/example.com.crt
 fi
 
@@ -74,3 +74,7 @@ done
 # create gateway
 # create virtual service
 # create service entry
+
+rm -rf $workdir
+kubectl delete ns customer
+kubectl create ns customer
