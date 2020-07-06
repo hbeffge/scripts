@@ -6,6 +6,8 @@ repeat=1
 counter=1
 setupistio=0
 workdir=/tmp/sni-tester
+test=0
+delete=0
 
 # help text
 usage()
@@ -16,6 +18,8 @@ usage()
     echo -e "\tUse -r or --repeat to sepcify how many sni configs should be generated. Default is 1"
     echo -e "\tUse -s or --setup to install Istio. Default is disabled"
     echo -e "\tUse -w or --workdir to sepcify the working directory e.g. to store the certificates. Default is /tmp/sni-tester"
+    echo -e "\tUse -t or --test to only run test curls against all ingress gateways. Default is disbaled"
+    echo -e "\tUse -d or --delete to delete all istio config & tmp dirs. Default is disbaled"
 }
 
 setup_istio()
@@ -44,6 +48,12 @@ while [ "$1" != "" ]; do
         -w | --workdir )        shift
                                 workdir=$1
                                 ;;
+        -t | --test )           shift
+                                test=1
+                                ;;
+        -d | --delete )         shift
+                                delete=1
+                                ;;
         -h | --help )           usage
                                 exit
                                 ;;
@@ -60,26 +70,46 @@ echo -e "\t-c = $counter"
 echo -e "\t-r = $repeat"
 echo -e "\t-s = $setupistio"
 echo -e "\t-w = $workdir"
+echo -e "\t-t = $test"
+echo -e "\t-d = $delete"
 echo -e "==="
 
-if [ "$setupistio" == 1 ]
-then
-    echo -e "\tSetting up Istio"
-    setup_istio
-fi
 
-if [ ! -d "$workdir" ] 
-then
-    mkdir $workdir
-fi
+if [ "$test" -eq 1 ]; then
+    export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+    export INGRESS_HOST=$(ifconfig ens3 | grep 'inet' | cut -d ' ' -f 10 | awk 'NR==1{print $1}')
 
-if [ ! -f "$workdir/example.com.crt" ]; then
-    openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout $workdir/example.com.key -out $workdir/example.com.crt
-fi
+    for i in {1..$counter}
+    do
+        curl -s -HHost:$i.example.com --resolve "$i.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" --cacert /tmp/sni-tester/example.com.crt "https://$i.example.com:$SECURE_INGRESS_PORT/headers" | jq '.headers.Host'
+    done
+elif [ "$delete" -eq 1 ]; then
+    rm -rf /tmp/sni-tester
+    for i in {1..$counter}; do 
+        kubectl delete gw -n istio-system gateway-$i
+        kubectl delete secret -n istio-system credential-$i
+        kubectl delete vs -n istio-system vs-$i
+    done
+    kubectl delete se -n istio-system external-httpbin
+    kubectl delete dr -n istio-system external-httpbin
+else
+    if [ "$setupistio" -eq 1 ]; then
+        echo -e "\tSetting up Istio"
+        setup_istio
+    fi
 
-# create service entry and destionation used by all
+    if [ ! -d "$workdir" ]; then
+        mkdir $workdir
+    fi
 
-cat << EOF | kubectl --kubeconfig $kubeconfig apply -f -
+    if [ ! -f "$workdir/example.com.crt" ]; then
+        openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout $workdir/example.com.key -out $workdir/example.com.crt
+    fi
+
+    # create service entry and destionation used by all
+    # hint: cat is not indented so EOF works
+
+    cat << EOF | kubectl --kubeconfig $kubeconfig apply -f -
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: ServiceEntry
@@ -108,15 +138,14 @@ spec:
       mode: SIMPLE
 EOF
 
-while [ "$repeat" -gt 0 ]
-do
-    # create certificate
-    openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
-    openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$counter.example.com.csr -out $workdir/$counter.example.com.crt
-    kubectl --kubeconfig $kubeconfig create -n istio-system secret tls credential-$counter --key=$workdir/$counter.example.com.key --cert=$workdir/$counter.example.com.crt
-    
-    # create gateway
-    cat << EOF | kubectl --kubeconfig $kubeconfig apply -f -
+    while [ "$repeat" -gt 0 ]; do
+        # create certificate
+        openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
+        openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$counter.example.com.csr -out $workdir/$counter.example.com.crt
+        kubectl --kubeconfig $kubeconfig create -n istio-system secret tls credential-$counter --key=$workdir/$counter.example.com.key --cert=$workdir/$counter.example.com.crt
+
+        # create gateway
+        cat << EOF | kubectl --kubeconfig $kubeconfig apply -f -
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
@@ -155,6 +184,7 @@ spec:
         host: httpbin.org
 ---
 EOF
-    (( counter = counter + 1 ))
-    (( repeat = repeat - 1 ))
-done
+        (( counter = counter + 1 ))
+        (( repeat = repeat - 1 ))
+    done
+fi
