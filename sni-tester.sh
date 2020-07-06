@@ -5,6 +5,7 @@ kubeconfig=$KUBECONFIG
 repeat=1
 counter=1
 setupistio=0
+workdir=/tmp/sni-tester
 
 # help text
 usage()
@@ -30,6 +31,9 @@ while [ "$1" != "" ]; do
         -s | --setup )          shift
                                 setupistio=1
                                 ;;
+        -w | --workdir )        shift
+                                workdir=$1
+                                ;;
         -h | --help )           usage
                                 exit
                                 ;;
@@ -45,9 +49,13 @@ echo -e "\t-k = $kubeconfig"
 echo -e "\t-c = $counter"
 echo -e "\t-r = $repeat"
 echo -e "\t-s = $setupistio"
+echo -e "\t-w = $workdir"
 echo -e "==="
 
 # create certificate
+
+#openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout example.com.key -out example.com.crt
+
 # create gateway
 # create virtual service
 # create service entry
