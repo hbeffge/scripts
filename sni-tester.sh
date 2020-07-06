@@ -66,7 +66,7 @@ while [ "$repeat" -gt 0 ]
 do
     openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
     openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$counter.example.com.csr -out $workdir/$counter.example.com.crt
-    (( $repeat-- ))
+    (( repeat=repeat-1 ))
 done
 
 # create gateway
