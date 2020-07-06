@@ -33,7 +33,6 @@ setup_istio()
 # arguments
 while [ "$1" != "" ]; do
     case $1 in
-    -t -r 10
         -k | --kubeconfig )     shift
                                 kubeconfig=$1
                                 ;;
