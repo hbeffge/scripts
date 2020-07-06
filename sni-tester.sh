@@ -121,8 +121,22 @@ spec:
           number: 443
         host: httpbin.org
 ---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-httpbin
+  namespace: istio-system
+spec:
+  hosts:
+  - httpbin.org
+  location: MESH_EXTERNAL
+  ports:
+  - number: 443
+    name: https-httpbin
+    protocol: TLS
+  resolution: DNS
+---
 EOF
-    # create service entry
     (( counter = counter + 1 ))
     (( repeat = repeat - 1 ))
 done
