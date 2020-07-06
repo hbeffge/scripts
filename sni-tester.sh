@@ -57,16 +57,18 @@ if [ ! -d "$workdir" ]
 then
     mkdir $workdir
 fi
-read -n 1 -s
+
 if [ ! -f "$workdir/example.com.crt" ]; then
     openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout $workdir/example.com.key -out $workdir/example.com.crt
 fi
-read -n 1 -s
+
 while [ "$repeat" -gt 0 ]
 do
     openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
     openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$counter.example.com.csr -out $workdir/$counter.example.com.crt
-    (( repeat=repeat-1 ))
+    kubectl create -n customer secret tls $counter-credential --key=$workdir/$counter.example.com.key --cert=$workdir/$counter.example.com.crt
+    (( counter = counter + 1 ))
+    (( repeat = repeat - 1 ))
 done
 
 # create gateway
