@@ -53,8 +53,21 @@ echo -e "\t-w = $workdir"
 echo -e "==="
 
 # create certificate
+if [ ! -d "$workdir" ] 
+then
+    mkdir $workdir
+fi
 
-#openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout example.com.key -out example.com.crt
+if [ ! -f "$workdir/example.com.crt" ]; then
+    openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout example.com.key -out example.com.crt
+fi
+
+while [ $repeat -gt 0 ]
+do
+    openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
+    openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$counter.example.com.csr -out $workdir/$counter.example.com.crt
+    (( $repeat-- ))
+done
 
 # create gateway
 # create virtual service
