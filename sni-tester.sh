@@ -133,7 +133,7 @@ spec:
   ports:
   - number: 443
     name: https-httpbin
-    protocol: TLS
+    protocol: HTTPS
   resolution: DNS
 ---
 EOF
