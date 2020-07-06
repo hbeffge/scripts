@@ -4,6 +4,7 @@
 kubeconfig=$KUBECONFIG
 repeat=1
 counter=1
+setupistio=0
 
 # help text
 usage()
@@ -26,6 +27,9 @@ while [ "$1" != "" ]; do
         -r | --repeat )         shift
                                 repeat=$1
                                 ;;
+        -s | --setup )          shift
+                                setupistio=1
+                                ;;
         -h | --help )           usage
                                 exit
                                 ;;
@@ -35,8 +39,15 @@ while [ "$1" != "" ]; do
     shift
 done
 
-# create certificate
+echo -e "Starting execusion with the following parameters:"
+echo -e "==="
+echo -e "\t-k = $kubeconfig"
+echo -e "\t-c = $counter"
+echo -e "\t-r = $repeat"
+echo -e "\t-s = $setupistio"
+echo -e "==="
 
+# create certificate
 # create gateway
 # create virtual service
 # create service entry
