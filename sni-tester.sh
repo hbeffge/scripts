@@ -85,7 +85,7 @@ if [ "$test_only" -eq 1 ]; then
     done
 elif [ "$delete" -eq 1 ]; then
     rm -rf /tmp/sni-tester
-    for i in {1..$repeat}; do 
+    for (( i=1; i<=$repeat; i++ )); do 
         kubectl delete gw -n istio-system gateway-$i
         kubectl delete secret -n istio-system credential-$i
         kubectl delete vs -n istio-system vs-$i
