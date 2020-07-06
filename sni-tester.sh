@@ -16,6 +16,14 @@ usage()
     echo -e "\tUse -c or --counter to specify the last position of the last created sni config. Default is 1"
 }
 
+setup_istio()
+{
+    curl -L https://istio.io/downloadIstio | sh -
+    export PATH="$PATH:/root/istio-1.6.4/bin"
+    istioctl install --set profile=default
+}
+
+
 # arguments
 while [ "$1" != "" ]; do
     case $1 in
@@ -51,6 +59,12 @@ echo -e "\t-r = $repeat"
 echo -e "\t-s = $setupistio"
 echo -e "\t-w = $workdir"
 echo -e "==="
+
+if [ "$setupistio" == 1 ]
+then
+    echo -e "\tSetting up Istio"
+    setup_istio()
+fi
 
 if [ ! -d "$workdir" ] 
 then
