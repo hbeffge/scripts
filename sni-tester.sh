@@ -52,7 +52,6 @@ echo -e "\t-s = $setupistio"
 echo -e "\t-w = $workdir"
 echo -e "==="
 
-# create certificate
 if [ ! -d "$workdir" ] 
 then
     mkdir $workdir
@@ -64,16 +63,37 @@ fi
 
 while [ "$repeat" -gt 0 ]
 do
+    # create certificate
     openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
     openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$counter.example.com.csr -out $workdir/$counter.example.com.crt
     kubectl create -n customer secret tls $counter-credential --key=$workdir/$counter.example.com.key --cert=$workdir/$counter.example.com.crt
+    
+    # create gateway
+    cat <<EOF | kubectl apply -f -
+    apiVersion: networking.istio.io/v1beta1
+    kind: Gateway
+    metadata:
+      name: mygateway
+      namespace: customer
+    spec:
+      selector:
+        istio: ingressgateway
+      servers:
+      - port:
+          number: 443
+          name: https
+          protocol: HTTPS
+        tls:
+          mode: SIMPLE
+          credentialName: $counter-credential
+        hosts:
+        - $counter.example.com
+    EOF
+    # create virtual service
+    # create service entry
     (( counter = counter + 1 ))
     (( repeat = repeat - 1 ))
 done
-
-# create gateway
-# create virtual service
-# create service entry
 
 rm -rf $workdir
 kubectl delete ns customer
