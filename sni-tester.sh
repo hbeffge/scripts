@@ -20,7 +20,7 @@ setup_istio()
 {
     curl -L https://istio.io/downloadIstio | sh -
     export PATH="$PATH:/root/istio-1.6.4/bin"
-    istioctl install --set profile=default
+    istioctl install --set profile=default --set meshConfig.accessLogFile="/dev/stdout"
 }
 
 
