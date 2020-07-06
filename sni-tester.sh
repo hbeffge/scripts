@@ -24,7 +24,7 @@ usage()
 
 setup_istio()
 {
-    curl -L https://istio.io/downloadIstio | sh -
+    curl -s -L https://istio.io/downloadIstio | sh -
     export PATH="$PATH:/root/istio-1.6.4/bin"
     istioctl --kubeconfig $kubeconfig install --set profile=default --set meshConfig.accessLogFile="/dev/stdout"
 }
