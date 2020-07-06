@@ -76,8 +76,7 @@ if [ "$test_only" -eq 1 ]; then
     export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
     export INGRESS_HOST=$(ifconfig ens3 | grep 'inet' | cut -d ' ' -f 10 | awk 'NR==1{print $1}')
 
-    for i in {1..$repeat}
-    do
+    for (( i=1; i<=$repeat; i++ )); do 
         curl -s -HHost:$i.example.com --resolve "$i.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" --cacert /tmp/sni-tester/example.com.crt "https://$i.example.com:$SECURE_INGRESS_PORT/headers" | jq '.headers.Host'
     done
 elif [ "$delete" -eq 1 ]; then
