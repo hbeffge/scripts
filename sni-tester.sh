@@ -77,14 +77,14 @@ if [ "$test_only" -eq 1 ]; then
     export INGRESS_HOST=$(ifconfig ens3 | grep 'inet' | cut -d ' ' -f 10 | awk 'NR==1{print $1}')
 
     for (( i=1; i<=$repeat; i++ )); do 
-        curl -s -HHost:$i.example.com --resolve "$i.example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" --cacert /tmp/sni-tester/example.com.crt "https://$i.example.com:$SECURE_INGRESS_PORT/headers" | jq '.headers.Host'
+        curl -s -HHost:$(printf "%05d" $i).example.com --resolve "$(printf "%05d" $i).example.com:$SECURE_INGRESS_PORT:$INGRESS_HOST" --cacert /tmp/sni-tester/example.com.crt "https://$(printf "%05d" $i).example.com:$SECURE_INGRESS_PORT/headers" | jq '.headers.Host'
     done
 elif [ "$delete" -eq 1 ]; then
     rm -rf /tmp/sni-tester
     for (( i=1; i<=$repeat; i++ )); do 
-        kubectl delete gw -n istio-system gateway-$i
-        kubectl delete secret -n istio-system credential-$i
-        kubectl delete vs -n istio-system vs-$i
+        kubectl delete gw -n istio-system gateway-$(printf "%05d" $i)
+        kubectl delete secret -n istio-system credential-$(printf "%05d" $i)
+        kubectl delete vs -n istio-system vs-$(printf "%05d" $i)
     done
     kubectl delete se -n istio-system external-httpbin
     kubectl delete dr -n istio-system external-httpbin
@@ -136,16 +136,16 @@ EOF
 
     while [ "$repeat" -gt 0 ]; do
         # create certificate
-        openssl req -out $workdir/$counter.example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$counter.example.com.key -subj "/CN=$counter.example.com/O=example organization"
-        openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$counter.example.com.csr -out $workdir/$counter.example.com.crt
-        kubectl --kubeconfig $kubeconfig create -n istio-system secret tls credential-$counter --key=$workdir/$counter.example.com.key --cert=$workdir/$counter.example.com.crt
+        openssl req -out $workdir/$(printf "%05d" $counter).example.com.csr -newkey rsa:2048 -nodes -keyout $workdir/$(printf "%05d" $counter).example.com.key -subj "/CN=$(printf "%05d" $counter).example.com/O=example organization"
+        openssl x509 -req -days 365 -CA $workdir/example.com.crt -CAkey $workdir/example.com.key -set_serial 0 -in $workdir/$(printf "%05d" $counter).example.com.csr -out $workdir/$(printf "%05d" $counter).example.com.crt
+        kubectl --kubeconfig $kubeconfig create -n istio-system secret tls credential-$(printf "%05d" $counter) --key=$workdir/$(printf "%05d" $counter).example.com.key --cert=$workdir/$(printf "%05d" $counter).example.com.crt
 
         # create gateway
         cat << EOF | kubectl --kubeconfig $kubeconfig apply -f -
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: gateway-$counter
+  name: gateway-$(printf "%05d" $counter)
   namespace: istio-system
 spec:
   selector:
@@ -153,25 +153,25 @@ spec:
   servers:
   - port:
       number: 443
-      name: https-$counter
+      name: https-$(printf "%05d" $counter)
       protocol: HTTPS
     tls:
       mode: SIMPLE
-      credentialName: credential-$counter
+      credentialName: credential-$(printf "%05d" $counter)
     hosts:
-    - $counter.example.com
+    - $(printf "%05d" $counter).example.com
 ---
 # create virtual service
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: vs-$counter
+  name: vs-$(printf "%05d" $counter)
   namespace: istio-system
 spec:
   hosts:
-  - $counter.example.com
+  - $(printf "%05d" $counter).example.com
   gateways:
-  - gateway-$counter
+  - gateway-$(printf "%05d" $counter)
   http:
   - route:
     - destination:
