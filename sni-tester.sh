@@ -14,7 +14,7 @@ usage()
 {
     echo -e "\tusage: ./sni-tester.sh [-h]"
     echo -e "\tUse -k or --kubeconfig to sepcify kubeconfig file location. Default is env var KUBECONFIG = ~/.kube/config"
-    echo -e "\tUse -c or --counter to specify the last position of the last created sni config. Default is 1"
+    echo -e "\tUse -c or --counter to specify where the next sni config should start. Default is 1"
     echo -e "\tUse -r or --repeat to sepcify how many sni configs should be generated. Default is 1"
     echo -e "\tUse -s or --setup to install Istio. Default is disabled"
     echo -e "\tUse -w or --workdir to sepcify the working directory e.g. to store the certificates. Default is /tmp/sni-tester"
